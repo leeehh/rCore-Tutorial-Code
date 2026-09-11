@@ -1,5 +1,13 @@
 # rCore-Tutorial-Code
 
+课程过程记录：在仓库根目录运行 `python3 course.py`，打开实验与实时日志。安装要求、日志位置和 Codex 入口见 [实验过程记录说明](docs/course-recording.md)。
+
+AI过程记录：在仓库根目录运行 `./scripts/setup-agent-plugins.sh auto`，也可具体选择 `codex`、`claude`、`cursor`、`vscode`。会话记录保存到 `.ai/agent-sessions/<agent>/`，文件名包含日期时间，格式为 JSONL。请同学们不要改动或删除这些记录，提交时会检查这些记录作为考核参考。详细说明见 [AI 会话归档说明](docs/agent-session-archive.md)。
+
+**Codex 首次使用需要信任 hooks**：安装完成后，在实验仓库根目录的终端运行 `codex`，进入后输入 `/hooks`，找到 `rcore-session-archive` 的 `Stop` 和 `SessionEnd`，分别审阅并选择 **Trust（信任）**。未信任时不会自动保存会话。使用 VS Code Codex 的同学完成后还需重载窗口并新建会话；更新插件后，如提示 hooks 发生变化，请重新审阅并信任。
+
+记录功能与验证：[实验过程记录工具功能说明](docs/course-monitor-report.md)。工具只在 `main` 分支分发；安装一次后，切换到 `ch1`–`ch8` 仍会记录。实验分支可使用 `git course logs` 查看日志，使用 `git agent-plugins auto` 再次配置 AI 归档。
+
 ## Code
 
 - [Soure Code of labs](https://github.com/LearningOS/rCore-Tutorial-Code)
