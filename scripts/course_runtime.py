@@ -87,7 +87,10 @@ def install_runtime(bundle, root=None):
     if exclude.is_symlink():
         raise ValueError('Git 本地排除配置不能是符号链接。')
     current = exclude.read_text(encoding='utf-8') if exclude.exists() else ''
-    missing = ['/' + name for name in LOCAL_PATHS if '/' + name not in current.splitlines()]
+    # Source-side caches remain after main's tracked Python files are checked out.
+    # Keep these patterns unanchored so they cover caches at any directory depth.
+    patterns = ['/' + name for name in LOCAL_PATHS] + ['__pycache__/', '*.py[cod]']
+    missing = [pattern for pattern in patterns if pattern not in current.splitlines()]
     if missing:
         text = current + ('\n' if current and not current.endswith('\n') else '')
         text += '# Installed course tools and local journals survive branch switches.\n'

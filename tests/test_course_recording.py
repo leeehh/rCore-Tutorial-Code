@@ -140,8 +140,13 @@ elif '--json' in args:
             self.skipTest('Node.js is required to exercise the VSIX adapter')
         for index in range(1,9):
             self.git('fetch', '--quiet', str(ROOT), f'refs/remotes/origin/ch{index}:refs/heads/ch{index}')
-        self.run_command(sys.executable, 'course.py', 'install')
-        self.run_command('bash', 'scripts/setup-agent-plugins.sh', 'all')
+        # Normal installations create source-side bytecode that survives checkout.
+        install_env = {key:value for key,value in self.env.items()
+                       if key not in ('PYTHONDONTWRITEBYTECODE', 'PYTHONPYCACHEPREFIX')}
+        self.run_command(sys.executable, 'course.py', 'install', env=install_env)
+        self.run_command('bash', 'scripts/setup-agent-plugins.sh', 'all', env=install_env)
+        self.assertTrue(list((self.root / 'scripts').rglob('*.pyc')))
+        self.assertTrue(list((self.root / 'plugins').rglob('*.pyc')))
         self.assertEqual(course_runtime.HOOKS_PATH, self.git('config', '--get', 'core.hooksPath').stdout.strip())
         extension = self.temp / 'extension'
         with zipfile.ZipFile(self.root / '.ai/course-tools/.course-monitor/rewind-ide-0.3.1.vsix') as package:
@@ -152,8 +157,8 @@ elif '--json' in args:
                 self.git('switch', branch)
                 if branch != 'main':
                     self.assertFalse((self.root / 'course.py').exists())
-                    self.assertFalse((self.root / 'plugins').exists())
-                    self.assertFalse((self.root / '.course-monitor').exists())
+                    self.assertFalse((self.root / 'plugins/rcore-session-archive/scripts/setup_agents.py').exists())
+                    self.assertFalse((self.root / '.course-monitor/config.json').exists())
                 status = json.loads(self.git('course', 'status').stdout)
                 self.assertTrue(status['recordingEnabled'])
                 self.assertEqual(str(self.root), status['project'])
@@ -161,7 +166,9 @@ elif '--json' in args:
                 self.git('course', 'codex', data='COURSE_PROMPT_' + branch)
                 self.archive_agents(branch)
                 # A clean chapter checkout must remain clean despite local setup and callbacks.
-                self.assertEqual('', self.git('status', '--porcelain').stdout.strip())
+                self.assertEqual('', self.git('status', '--porcelain', '--untracked-files=all').stdout.strip())
+                self.git('add', '.')
+                self.assertEqual('', self.git('diff', '--cached', '--name-only').stdout.strip())
                 self.git('commit', '--allow-empty', '-m', 'Checkpoint ' + branch)
                 paths = self.git('diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD').stdout.splitlines()
                 self.assertTrue(paths)
