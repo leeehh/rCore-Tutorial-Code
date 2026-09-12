@@ -169,3 +169,13 @@ pub fn exit_current_and_run_next() {
     mark_current_exited();
     run_next_task();
 }
+
+/// TODO: Record a syscall made by the current task for later queries or scheduling.
+pub fn record_current_syscall(_syscall_id: usize) {
+    todo!("not implemented yet");
+}
+
+/// TODO: Query the current task's syscall count, returning 0 if the ID is outside the tracked range.
+pub fn current_syscall_count(_syscall_id: usize) -> usize {
+    todo!("not implemented yet");
+}
